@@ -1,42 +1,25 @@
-import youtube_dl
+import os
+from pytube import YouTube
 
-def download_audio(link):
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'flac',
-            'preferredquality': '1'
-        }, {
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '320'
-        }],
-        'outtmpl': '%(title)s.%(ext)s'
-    }
+# Output PATH
+OUTPUT_FOLDER = 'D:/YouTube Audios'
 
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        try:
-            ydl.download([link])
-            print("Download completed successfully!")
-        except youtube_dl.DownloadError as e:
-            print(f"Download failed: {str(e)}")
+# Define the bitrate for the downloaded FLAC audio files
+BITRATE = '320k'  # Set the desired bit-rate (e.g., 320kbps for high quality)
 
-def validate_link(link):
-    # Return True if the link is valid, otherwise return False
-    if link.startswith("http://") or link.startswith("https://"):
-        return True
-    else:
-        return False
+VIDEO_URL = input("Enter YouTube URL audio: ")
 
-def main():
-    link = input("Enter the link: ")
+yt = YouTube(VIDEO_URL)
 
-    if validate_link(link):
-        download_audio(link)
-    else:
-        print("Invalid link!")
+# Get the best audio stream (you can customize this based on your quality preferences)
+audio_stream = yt.streams.filter(only_audio=True, file_extension='webm').first()
 
-if __name__ == '__main__':
-    main()
+# Download the audio file in FLAC format with the specified bit-rate
+audio_stream.download(output_path=OUTPUT_FOLDER)
+# Rename the downloaded file with the video title and .flac extension
+output_file_path = audio_stream.download(output_path=OUTPUT_FOLDER)
+output_file_name = yt.title + ".flac"
+os.rename(output_file_path, os.path.join(OUTPUT_FOLDER, output_file_name))
 
+# Print a message to the user
+print("Audio file downloaded successfully!")
